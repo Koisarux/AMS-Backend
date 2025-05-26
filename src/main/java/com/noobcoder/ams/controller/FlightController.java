@@ -7,8 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -54,7 +59,51 @@ public class FlightController {
     }
 
     @GetMapping("/flights")
-    public ResponseEntity<List<Flight>> searchFlights() {
+    public ResponseEntity<List<Flight>> getAllFlightsPublic() {
         return ResponseEntity.ok(flightService.getAllFlights());
+    }
+
+    @GetMapping("/flights/search")
+    public ResponseEntity<List<Flight>> searchFlights(
+            @RequestParam(value = "origin", required = false) String origin,
+            @RequestParam(value = "destination", required = false) String destination,
+            @RequestParam(value = "date", required = false) String dateStr) {
+        try {
+            List<Flight> flights = flightService.getAllFlights();
+
+            // Filter by origin if provided
+            if (origin != null && !origin.trim().isEmpty()) {
+                String finalOrigin = origin.trim();
+                flights = flights.stream()
+                        .filter(flight -> flight.getOrigin().equalsIgnoreCase(finalOrigin))
+                        .collect(Collectors.toList());
+            }
+
+            // Filter by destination if provided
+            if (destination != null && !destination.trim().isEmpty()) {
+                String finalDestination = destination.trim();
+                flights = flights.stream()
+                        .filter(flight -> flight.getDestination().equalsIgnoreCase(finalDestination))
+                        .collect(Collectors.toList());
+            }
+
+            // Filter by date if provided
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                LocalDate searchDate;
+                try {
+                    searchDate = LocalDate.parse(dateStr.trim(), formatter);
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException("Invalid date format: " + dateStr + ". Expected format: yyyy-MM-dd");
+                }
+                flights = flights.stream()
+                        .filter(flight -> flight.getDepartureTime().toLocalDate().isEqual(searchDate))
+                        .collect(Collectors.toList());
+            }
+
+            return ResponseEntity.ok(flights);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error processing search request: " + e.getMessage());
+        }
     }
 }
