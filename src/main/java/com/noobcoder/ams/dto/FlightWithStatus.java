@@ -10,5 +10,6 @@ public interface FlightWithStatus {
     String getDestination();
     Integer getTotalSeats();
     Integer getAvailableSeats();
+    Double getPrice();
     String getBookingStatus();
 }

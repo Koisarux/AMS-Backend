@@ -12,7 +12,7 @@ public interface FlightRepository extends JpaRepository<Flight, String> {
 
     @Query(value = "SELECT f.flight_number as flightNumber, f.departure_time as departureTime, " +
                    "f.arrival_time as arrivalTime, f.origin as origin, f.destination as destination, " +
-                   "f.total_seats as totalSeats, f.available_seats as availableSeats, " +
+                   "f.total_seats as totalSeats, f.available_seats as availableSeats, f.price as price, " +
                    "CASE WHEN f.available_seats = 0 THEN 'SOLD OUT' " +
                    "     WHEN f.available_seats < 10 THEN 'FILLING FAST' " +
                    "     ELSE 'AVAILABLE' END as bookingStatus " +
