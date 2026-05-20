@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "flights")
+@Table(name = "flights", indexes = {
+    @Index(name = "idx_flight_departure_time", columnList = "departureTime")
+})
 public class Flight {
     @Id
     private String flightNumber;
@@ -27,6 +29,9 @@ public class Flight {
     @Column(nullable = false)
     private Integer availableSeats;
 
+    @Column(nullable = false)
+    private Double price;
+
     // Getters and Setters
     public String getFlightNumber() { return flightNumber; }
     public void setFlightNumber(String flightNumber) { this.flightNumber = flightNumber; }
@@ -42,4 +47,6 @@ public class Flight {
     public void setTotalSeats(Integer totalSeats) { this.totalSeats = totalSeats; }
     public Integer getAvailableSeats() { return availableSeats; }
     public void setAvailableSeats(Integer availableSeats) { this.availableSeats = availableSeats; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
 }

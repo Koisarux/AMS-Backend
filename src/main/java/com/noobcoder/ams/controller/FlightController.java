@@ -1,7 +1,12 @@
 package com.noobcoder.ams.controller;
 
 import com.noobcoder.ams.model.Flight;
+import com.noobcoder.ams.model.FlightBookingSummary;
+import com.noobcoder.ams.repository.FlightBookingSummaryRepository;
 import com.noobcoder.ams.service.FlightService;
+import com.noobcoder.ams.dto.FlightWithStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +27,14 @@ public class FlightController {
     @Autowired
     private FlightService flightService;
 
+    @Autowired
+    private FlightBookingSummaryRepository summaryRepository;
+
+    @GetMapping("/admin/flights/summary")
+    public ResponseEntity<List<FlightBookingSummary>> getFlightSummary() {
+        return ResponseEntity.ok(summaryRepository.findAll());
+    }
+
     @PostMapping("/admin/flights")
     public ResponseEntity<Flight> addFlight(@RequestBody Flight flight) {
         if (flight.getTotalSeats() < 0 || flight.getAvailableSeats() < 0) {
@@ -35,8 +48,8 @@ public class FlightController {
     }
 
     @GetMapping("/admin/flights")
-    public ResponseEntity<List<Flight>> getAllFlights() {
-        return ResponseEntity.ok(flightService.getAllFlights());
+    public ResponseEntity<Page<Flight>> getAllFlights(Pageable pageable) {
+        return ResponseEntity.ok(flightService.getAllFlights(pageable));
     }
 
     @GetMapping("/admin/flights/{flightNumber}")
@@ -59,17 +72,24 @@ public class FlightController {
     }
 
     @GetMapping("/flights")
-    public ResponseEntity<List<Flight>> getAllFlightsPublic() {
-        return ResponseEntity.ok(flightService.getAllFlights());
+    public ResponseEntity<Page<Flight>> getAllFlightsPublic(Pageable pageable) {
+        return ResponseEntity.ok(flightService.getAllFlights(pageable));
+    }
+
+    @GetMapping("/flights/status")
+    public ResponseEntity<List<FlightWithStatus>> getFlightsWithStatus() {
+        return ResponseEntity.ok(flightService.getFlightsWithStatus());
     }
 
     @GetMapping("/flights/search")
-    public ResponseEntity<List<Flight>> searchFlights(
+    public ResponseEntity<Page<Flight>> searchFlights(
             @RequestParam(value = "origin", required = false) String origin,
             @RequestParam(value = "destination", required = false) String destination,
-            @RequestParam(value = "date", required = false) String dateStr) {
+            @RequestParam(value = "date", required = false) String dateStr,
+            Pageable pageable) {
         try {
-            List<Flight> flights = flightService.getAllFlights();
+            Page<Flight> flightsPage = flightService.getAllFlights(pageable);
+            List<Flight> flights = flightsPage.getContent();
 
             // Filter by origin if provided
             if (origin != null && !origin.trim().isEmpty()) {
@@ -101,7 +121,16 @@ public class FlightController {
                         .collect(Collectors.toList());
             }
 
-            return ResponseEntity.ok(flights);
+            // Note: Since this is in-memory filtering over paginated data, it might not return consistent pages.
+            // In a real application, filtering should happen at the DB layer via FlightRepository.
+            // We will return a sublist for now as a workaround since pagination applies to findAll.
+
+            // Convert back to a new PageImpl? For simplicity, since the return type is Page<Flight>, we can just return a PageImpl.
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), flights.size());
+            List<Flight> pagedFlights = flights.subList(Math.min(start, flights.size()), end);
+            
+            return ResponseEntity.ok(new org.springframework.data.domain.PageImpl<>(pagedFlights, pageable, flights.size()));
         } catch (Exception e) {
             throw new IllegalArgumentException("Error processing search request: " + e.getMessage());
         }

@@ -27,7 +27,8 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking bookFlight(Long userId, String flightNumber, int numberOfTickets) {
+    public Booking bookFlight(Long userId, String flightNumber, int numberOfTickets, 
+                              String passengerName, String gender, String passportNumber, String paymentMethod) {
         // Validate user exists
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + userId + " not found"));
@@ -39,9 +40,10 @@ public class BookingService {
             throw new IllegalArgumentException("Not enough available seats");
         }
 
-        // Update flight availability
-        flight.setAvailableSeats(flight.getAvailableSeats() - numberOfTickets);
-        flightRepository.save(flight);
+        // Seat deduction is now handled by a database trigger (AFTER INSERT on bookings)
+
+        // Calculate total price
+        Double totalPrice = (flight.getPrice() != null) ? (flight.getPrice() * numberOfTickets) : null;
 
         // Create and save booking
         Booking booking = new Booking();
@@ -50,6 +52,11 @@ public class BookingService {
         booking.setNumberOfTickets(numberOfTickets);
         booking.setBookingDate(LocalDateTime.now());
         booking.setStatus("CONFIRMED"); // Default status
+        booking.setPassengerName(passengerName);
+        booking.setGender(gender);
+        booking.setPassportNumber(passportNumber);
+        booking.setPaymentMethod(paymentMethod);
+        booking.setTotalPrice(totalPrice);
 
         return bookingRepository.save(booking);
     }
@@ -58,7 +65,8 @@ public class BookingService {
         return bookingRepository.findByUserId(userId);
     }
 
+    @Transactional
     public void cancelBooking(Long bookingId) {
-        bookingRepository.deleteById(bookingId);
+        bookingRepository.cancelBookingProcedure(bookingId);
     }
 }

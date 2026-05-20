@@ -5,6 +5,9 @@ import com.noobcoder.ams.repository.FlightRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import com.noobcoder.ams.dto.FlightWithStatus;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +21,19 @@ public class FlightService {
         return flightRepository.save(flight);
     }
 
-    public List<Flight> getAllFlights() {
-        return flightRepository.findAll();
+    public Page<Flight> getAllFlights(Pageable pageable) {
+        if (pageable.getSort().isUnsorted()) {
+            pageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                org.springframework.data.domain.Sort.by("flightNumber").ascending()
+            );
+        }
+        return flightRepository.findAll(pageable);
+    }
+
+    public List<FlightWithStatus> getFlightsWithStatus() {
+        return flightRepository.findAllFlightsWithStatus();
     }
 
     public Optional<Flight> getFlightByNumber(String flightNumber) {

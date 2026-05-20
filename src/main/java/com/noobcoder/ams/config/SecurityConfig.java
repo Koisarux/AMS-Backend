@@ -26,7 +26,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/register", "/api/flights").permitAll()
+                        .requestMatchers("/api/users/register", "/api/flights", "/api/flights/search", "/api/flights/status").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("admin")
                         .requestMatchers("/api/bookings/**").hasRole("customer")
                         .anyRequest().authenticated()

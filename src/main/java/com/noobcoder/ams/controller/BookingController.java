@@ -23,7 +23,13 @@ public class BookingController {
     private UserRepository userRepository;
 
     @PostMapping("/book")
-    public ResponseEntity<Booking> bookFlight(@RequestParam String flightNumber, @RequestParam int numberOfTickets) {
+    public ResponseEntity<Booking> bookFlight(
+            @RequestParam String flightNumber,
+            @RequestParam int numberOfTickets,
+            @RequestParam(required = false) String passengerName,
+            @RequestParam(required = false) String gender,
+            @RequestParam(required = false) String passportNumber,
+            @RequestParam(required = false) String paymentMethod) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
         User user = userRepository.findByEmail(email);
@@ -34,7 +40,8 @@ public class BookingController {
         if (numberOfTickets <= 0) {
             throw new IllegalArgumentException("Number of tickets must be greater than zero");
         }
-        Booking booking = bookingService.bookFlight(userId, flightNumber, numberOfTickets);
+        Booking booking = bookingService.bookFlight(userId, flightNumber, numberOfTickets, 
+                passengerName, gender, passportNumber, paymentMethod);
         return ResponseEntity.ok(booking);
     }
 
