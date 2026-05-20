@@ -32,8 +32,8 @@ public class FlightService {
         return flightRepository.findAll(pageable);
     }
 
-    public List<FlightWithStatus> getFlightsWithStatus() {
-        return flightRepository.findAllFlightsWithStatus();
+    public Page<FlightWithStatus> getFlightsWithStatus(Pageable pageable) {
+        return flightRepository.findAllFlightsWithStatus(pageable);
     }
 
     public Optional<Flight> getFlightByNumber(String flightNumber) {

@@ -4,6 +4,9 @@ SELECT
     f.flight_number,
     f.origin,
     f.destination,
+    f.departure_time,
+    f.arrival_time,
+    f.price,
     f.total_seats,
     f.available_seats,
     (f.total_seats - f.available_seats) AS booked_seats

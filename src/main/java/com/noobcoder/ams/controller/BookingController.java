@@ -49,12 +49,7 @@ public class BookingController {
     public ResponseEntity<List<Booking>> getUserBookings() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        Long userId = user.getId();
-        return ResponseEntity.ok(bookingService.getUserBookings(userId));
+        return ResponseEntity.ok(bookingService.getUserBookingsByEmail(email));
     }
 
     @DeleteMapping("/{bookingId}")

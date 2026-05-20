@@ -65,6 +65,10 @@ public class BookingService {
         return bookingRepository.findByUserId(userId);
     }
 
+    public List<Booking> getUserBookingsByEmail(String email) {
+        return bookingRepository.findBookingsByUserEmail(email);
+    }
+
     @Transactional
     public void cancelBooking(Long bookingId) {
         bookingRepository.cancelBookingProcedure(bookingId);

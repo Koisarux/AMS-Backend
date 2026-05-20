@@ -77,8 +77,8 @@ public class FlightController {
     }
 
     @GetMapping("/flights/status")
-    public ResponseEntity<List<FlightWithStatus>> getFlightsWithStatus() {
-        return ResponseEntity.ok(flightService.getFlightsWithStatus());
+    public ResponseEntity<Page<FlightWithStatus>> getFlightsWithStatus(Pageable pageable) {
+        return ResponseEntity.ok(flightService.getFlightsWithStatus(pageable));
     }
 
     @GetMapping("/flights/search")

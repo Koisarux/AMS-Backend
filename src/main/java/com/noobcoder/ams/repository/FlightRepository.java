@@ -2,10 +2,11 @@ package com.noobcoder.ams.repository;
 
 import com.noobcoder.ams.model.Flight;
 import com.noobcoder.ams.dto.FlightWithStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
-import java.util.List;
 
 public interface FlightRepository extends JpaRepository<Flight, String> {
     Optional<Flight> findByFlightNumber(String flightNumber);
@@ -16,6 +17,8 @@ public interface FlightRepository extends JpaRepository<Flight, String> {
                    "CASE WHEN f.available_seats = 0 THEN 'SOLD OUT' " +
                    "     WHEN f.available_seats < 10 THEN 'FILLING FAST' " +
                    "     ELSE 'AVAILABLE' END as bookingStatus " +
-                   "FROM flights f ORDER BY f.flight_number ASC", nativeQuery = true)
-    List<FlightWithStatus> findAllFlightsWithStatus();
+                   "FROM flights f ORDER BY f.flight_number ASC",
+           countQuery = "SELECT COUNT(*) FROM flights",
+           nativeQuery = true)
+    Page<FlightWithStatus> findAllFlightsWithStatus(Pageable pageable);
 }
